@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Lab 5 - Deploy App on Kubernetes using Helm :: Cloudnative Learning 101</title>
-    <link rel="canonical" href="https://ibm-cloud-architecture.github.io/cloudnative-learning-101/cloudnative-learning-101/1.0.0/Kubernetes_Module/Lab5.html">
+    <title>Deploying on Openshift :: Learning Cloudnative 101</title>
+    <link rel="canonical" href="https://ibm-cloud-architecture.github.io/cloudnative-learning-101/learning-cloudnative-101/1.0.0/Kubernetes_Module/Lab4.html">
     <meta name="generator" content="Antora 2.0.1">
     <link rel="stylesheet" href="../../../_/css/site.css">
   </head>
@@ -13,20 +13,19 @@
   <nav class="navbar">
     <div class="navbar-brand">
       <div class="navbar-item">
-        <p>Cloudnative Learning 101</p>
+        <p>Learning Cloudnative 101</p>
       </div>
     </div>
     <div id="topbar-nav" class="navbar-menu">
     </div>
   </nav>
-</header>
-<div class="body">
-<div class="nav-container" data-component="cloudnative-learning-101" data-version="1.0.0">
+</header><div class="body">
+<div class="nav-container" data-component="learning-cloudnative-101" data-version="1.0.0">
   <aside class="nav">
     <div class="panels">
 <div class="nav-panel-menu is-active" data-panel="menu">
   <nav class="nav-menu">
-    <h3 class="title"><a href="../index.html">Cloudnative Learning 101</a></h3>
+    <h3 class="title"><a href="../index.html">Learning Cloudnative 101</a></h3>
 <ul class="nav-list">
   <li class="nav-item" data-depth="0">
 <ul class="nav-list">
@@ -64,13 +63,13 @@
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="Lab3.html">Lab 3: Kubernetes Patterns</a>
   </li>
-  <li class="nav-item" data-depth="2">
+  <li class="nav-item is-current-page" data-depth="2">
     <a class="nav-link" href="Lab4.html">Lab 4: Deploy the app on Kube</a>
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="operators.html">Helm/Operator Patterns</a>
   </li>
-  <li class="nav-item is-current-page" data-depth="2">
+  <li class="nav-item" data-depth="2">
     <a class="nav-link" href="Lab5.html">Lab 5: Deploy the app on Kube using Helm (TODO)</a>
   </li>
 </ul>
@@ -127,12 +126,12 @@
 </div>
 <div class="nav-panel-explore" data-panel="explore">
   <div class="context">
-    <span class="title">Cloudnative Learning 101</span>
+    <span class="title">Learning Cloudnative 101</span>
     <span class="version">1.0.0</span>
   </div>
   <ul class="components">
     <li class="component is-current">
-      <span class="title">Cloudnative Learning 101</span>
+      <span class="title">Learning Cloudnative 101</span>
       <ul class="versions">
         <li class="version is-current is-latest">
           <a href="../index.html">1.0.0</a>
@@ -150,15 +149,15 @@
   <a href="../index.html" class="home-link"></a>
 <nav class="breadcrumbs" aria-label="breadcrumbs">
   <ul>
-    <li><a href="../index.html">Cloudnative Learning 101</a></li>
+    <li><a href="../index.html">Learning Cloudnative 101</a></li>
     <li>Kubernetes Module</li>
-    <li><a href="Lab5.html">Lab 5: Deploy the app on Kube using Helm (TODO)</a></li>
+    <li><a href="Lab4.html">Lab 4: Deploy the app on Kube</a></li>
   </ul>
 </nav>
-  <div class="edit-this-page"><a href="https://github.com/ibm-cloud-architecture/cloudnative-learning-101/edit/master/modules/ROOT/pages/Kubernetes_Module/Lab5.adoc">Edit this Page</a></div>
+  <div class="edit-this-page"><a href="https://github.com/ibm-cloud-architecture/cloudnative-learning-101/edit/master/modules/ROOT/pages/Kubernetes_Module/Lab4.adoc">Edit this Page</a></div>
 </div>
 <article class="doc">
-<h1 class="page">Lab 5 - Deploy App on Kubernetes using Helm</h1>
+<h1 class="page">Deploying on Openshift</h1>
 <div id="toc" class="toc">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
@@ -180,7 +179,7 @@
 <h2 id="_introduction"><a class="anchor" href="#_introduction"></a>Introduction</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>In this lab, you will learn about how to use docker and how to run applications using docker.</p>
+<p>In this lab, you will learn how to get started using Open Shift by deploying a sample application on an OpenShift service hosted by IBM Cloud.  The sample application is built using Java 8.</p>
 </div>
 </div>
 </div>
@@ -190,13 +189,16 @@
 <div class="ulist">
 <ul>
 <li>
-<p>You need <a href="https://www.java.com/en/">Java</a> installed on your environment. You can download it <a href="https://www.java.com/download/">here</a>. Please install the latest version which is Java Version 8. Make sure you set <code>JAVA_HOME</code> environment variable. You can verify the version after installation using <code>java -version</code>.</p>
+<p>Read and understand resource groups: <a href="https://cloud.ibm.com/docs/resources?topic=resources-rgs">IBM Cloud Resource Groups</a></p>
 </li>
 <li>
-<p>Create a <a href="https://hub.docker.com/">DockerHub account</a>. This account is needed to push images to docker registry. Also create a repository following the instructions <a href="https://docs.docker.com/docker-hub/repos/">here</a>.</p>
+<p>You will need an IBM Account for <a href="https://cloud.ibm.com/">IBM Cloud</a></p>
 </li>
 <li>
-<p>You need to install <a href="https://www.docker.com/">Docker</a> in your environment. Follow the instructions <a href="https://docs.docker.com/docker-for-mac/install/">here</a> to install it on Mac and <a href="https://docs.docker.com/docker-for-windows/install/">here</a> to install it on Windows.</p>
+<p>Downloaded and installed the Open Shift CLI at <a href="https://OpenShift.io/docs/tasks/tools/install-kubectl/">Open Shift CLI Installation</a>. Follow the instructions for your computer&#8217;s operating system.</p>
+</li>
+<li>
+<p>Downloaded and installed the IBM Cloud CLI at <a href="https://cloud.ibm.com/docs/cli?topic=cloud-cli-getting-started#step1-install-idt">IBM Cloud CLI Installation</a>. Follow the instructions for your computer&#8217;s operating system.</p>
 </li>
 </ul>
 </div>

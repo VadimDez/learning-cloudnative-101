@@ -158,6 +158,41 @@
 </div>
 <article class="doc">
 <h1 class="page">Foundational Kubernetes Patterns</h1>
+<div id="toc" class="toc">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_predictable_demands_pattern">Predictable Demands Pattern</a>
+<ul class="sectlevel2">
+<li><a href="#_runtime_dependencies">Runtime Dependencies</a></li>
+<li><a href="#_resource_profiles">Resource Profiles</a></li>
+<li><a href="#_pod_priority">Pod Priority</a></li>
+</ul>
+</li>
+<li><a href="#_declarative_deployment_pattern">Declarative Deployment Pattern</a>
+<ul class="sectlevel2">
+<li><a href="#_rolling_deployment">Rolling Deployment</a></li>
+<li><a href="#_fixed_deployment">Fixed Deployment</a></li>
+<li><a href="#_blue_green_release">Blue-Green Release</a></li>
+<li><a href="#_canary_release">Canary Release</a></li>
+</ul>
+</li>
+<li><a href="#_health_probe_pattern">Health Probe Pattern</a>
+<ul class="sectlevel2">
+<li><a href="#_process_health_checks">Process Health Checks</a></li>
+<li><a href="#_liveness_probes">Liveness Probes</a></li>
+<li><a href="#_readiness_probes">Readiness Probes</a></li>
+</ul>
+</li>
+<li><a href="#_managed_lifecycle_pattern">Managed Lifecycle Pattern</a>
+<ul class="sectlevel2">
+<li><a href="#_sigterm">SIGTERM</a></li>
+<li><a href="#_sigkill">SIGKILL</a></li>
+<li><a href="#_poststart">postStart</a></li>
+<li><a href="#_prestop">preStop</a></li>
+</ul>
+</li>
+</ul>
+</div>
 <div class="sect1">
 <h2 id="_predictable_demands_pattern"><a class="anchor" href="#_predictable_demands_pattern"></a>Predictable Demands Pattern</h2>
 <div class="sectionbody">

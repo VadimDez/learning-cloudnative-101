@@ -67,7 +67,16 @@
     <a class="nav-link" href="kubernetesPatterns.html">Kubernetes Patterns</a>
   </li>
   <li class="nav-item is-current-page" data-depth="2">
-    <a class="nav-link" href="Lab3.html">Lab 3: Deploy Kubernetes App (TODO)</a>
+    <button class="nav-item-toggle"></button>
+    <a class="nav-link" href="Lab3.html">Lab 3: Deploy Kubernetes App</a>
+<ul class="nav-list">
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="#_deploy_kubernetes_app_using_openshift_console">Using OCP Console</a>
+  </li>
+  <li class="nav-item" data-depth="3">
+    <a class="nav-link" href="#_deploy_kubernetes_app_using_oc_cli">Using oc CLI</a>
+  </li>
+</ul>
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="Lab4.html">Lab 4: Update Kubernetes App (TODO)</a>
@@ -157,7 +166,7 @@
   <ul>
     <li><a href="../Cloud_Native_Module/Cloudnative_Overview.html">Learning Cloudnative 101</a></li>
     <li>Kubernetes</li>
-    <li><a href="Lab3.html">Lab 3: Deploy Kubernetes App (TODO)</a></li>
+    <li><a href="Lab3.html">Lab 3: Deploy Kubernetes App</a></li>
   </ul>
 </nav>
   <div class="edit-this-page"><a href="https://github.com/ibm-cloud-architecture/learning-cloudnative-101/edit/master/modules/ROOT/pages/Kubernetes_Module/Lab3.adoc">Edit this Page</a></div>
@@ -174,8 +183,8 @@
 <li><a href="#_getting_the_sample_application">Getting the Sample Application</a></li>
 <li><a href="#_deploying_the_sample_application">Deploying the Sample Application</a>
 <ul class="sectlevel2">
-<li><a href="#_via_console">Via Console</a></li>
-<li><a href="#_via_cli">Via CLI</a></li>
+<li><a href="#_deploy_kubernetes_app_using_openshift_console">Deploy Kubernetes App using OpenShift Console</a></li>
+<li><a href="#_deploy_kubernetes_app_using_oc_cli">Deploy Kubernetes App using oc CLI</a></li>
 </ul>
 </li>
 <li><a href="#_conclusion">Conclusion</a></li>
@@ -274,7 +283,7 @@ Once logged in to either the <strong>OpenShift Console</strong> or <strong>CLI</
 <p>In this section we will deploy the sample application that you downloaded. You can follow the <strong>Console</strong> section to deploy it via the <strong>OpenShift Console</strong> and the <strong>CLI</strong> section for the command line.</p>
 </div>
 <div class="sect2">
-<h3 id="_via_console"><a class="anchor" href="#_via_console"></a>Via Console</h3>
+<h3 id="_deploy_kubernetes_app_using_openshift_console"><a class="anchor" href="#_deploy_kubernetes_app_using_openshift_console"></a>Deploy Kubernetes App using OpenShift Console</h3>
 <div class="paragraph">
 <p>With the OpenShift Console open, let&#8217;s <strong>Create a Project</strong> named <strong>deploy-sample</strong></p>
 </div>
@@ -404,32 +413,57 @@ Once logged in to either the <strong>OpenShift Console</strong> or <strong>CLI</
 </div>
 </div>
 <div class="sect2">
-<h3 id="_via_cli"><a class="anchor" href="#_via_cli"></a>Via CLI</h3>
+<h3 id="_deploy_kubernetes_app_using_oc_cli"><a class="anchor" href="#_deploy_kubernetes_app_using_oc_cli"></a>Deploy Kubernetes App using oc CLI</h3>
 <div class="paragraph">
 <p>Next open up a <strong>Terminal</strong> window and follow the steps from the <strong>Accessing the OpenShift Cluster</strong> for the CLI access. (Make sure to append "--sso" after "login" if needed).</p>
 </div>
 <div class="paragraph">
+<div class="title">Create A Project</div>
 <p>Once logged in, we want to create a new project called deploy-sample in your OpenShift Cluster:</p>
 </div>
 <div class="listingblock">
-<div class="title">Create A Project</div>
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ oc new-project deploy-sample</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc new-project deploy-sample</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>After we have created the project we need to create a deployment of our application.  Navigate to the <strong>chart/cloudnativesampleapp</strong> directory of the sample application.</p>
+<p>If you already have an existing project, you can select the project using:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>oc project deploy-sample</pre>
+</div>
+</div>
+<div class="paragraph">
+<div class="title">Get the Sample Application from Github</div>
+<p>Get the code from the Github repository, and use the branch <strong>Basic-Tutorial</strong></p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">git clone -b "Basic-Tutorial" https://github.com/ibm-cloud-architecture/learning-cloudnative-101.git</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Navigate to the <strong>chart/cloudnativesampleapp</strong> directory of the sample application.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">cd learning-cloudnative-101/chart/cloudnativesampleapp</code></pre>
+</div>
 </div>
 <div class="paragraph">
 <p>Once there you will see two files: <strong>deployment.yaml</strong> and <strong>service.yaml</strong></p>
 </div>
 <div class="paragraph">
+<div class="title">Create A Deployment</div>
+<p>After we have created the project we need to create a deployment of our application.</p>
+</div>
+<div class="paragraph">
 <p>In next few steps we will deploy each of them. We will start with creating the deployment:</p>
 </div>
 <div class="listingblock">
-<div class="title">Create A Deployment</div>
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ oc create -f deployment.yaml</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc create -f deployment.yaml</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -438,7 +472,16 @@ Once logged in to either the <strong>OpenShift Console</strong> or <strong>CLI</
 <div class="listingblock">
 <div class="title">Verify Deployment</div>
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ oc get deployment</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get deployment</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should see the followig output:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">NAME                   DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+greetings-deployment   1         1         1            1           36s</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -447,7 +490,7 @@ Once logged in to either the <strong>OpenShift Console</strong> or <strong>CLI</
 <div class="listingblock">
 <div class="title">Create A Service</div>
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ oc create -f service.yaml</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc create -f service.yaml</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -456,7 +499,16 @@ Once logged in to either the <strong>OpenShift Console</strong> or <strong>CLI</
 <div class="listingblock">
 <div class="title">Verify Service</div>
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ oc get svc</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get svc</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should see the followig output:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>NAME               TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+greeting-service   ClusterIP   172.21.203.25   &lt;none&gt;        8080/TCP   16s</pre>
 </div>
 </div>
 <div class="paragraph">
@@ -465,7 +517,7 @@ Once logged in to either the <strong>OpenShift Console</strong> or <strong>CLI</
 <div class="listingblock">
 <div class="title">Create a Route</div>
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ oc expose svc greeting-service</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc expose svc greeting-service</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -477,16 +529,20 @@ Once logged in to either the <strong>OpenShift Console</strong> or <strong>CLI</
 <div class="listingblock">
 <div class="title">Retrieve the Route</div>
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ oc get route</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get route</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should see the followig output:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre>NAME               HOST/PORT                                PATH      SERVICES           PORT      TERMINATION   WILDCARD
+greeting-service   greeting-service-{project}.{subdomain}             greeting-service   http                    None</pre>
 </div>
 </div>
 <div class="paragraph">
 <p>Find the route named <strong>greeting-service</strong> and copy the HOST/PORT. Should start with <strong>greeting-service-deploy-sample</strong></p>
-</div>
-<div class="imageblock">
-<div class="content">
-<img src="../_images/get-route.png" alt="get route">
-</div>
 </div>
 <div class="paragraph">
 <p>Next Open a web browser and paste address in the search bar and append <strong>/greeting?name=John</strong> to the end of it and hit Enter. You should see the following:</p>

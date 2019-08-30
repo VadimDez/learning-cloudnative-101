@@ -209,9 +209,6 @@
 <li>
 <p><a href="https://www.java.com/en/">Java</a></p>
 </li>
-<li>
-<p><a href="https://maven.apache.org/">Maven</a></p>
-</li>
 </ul>
 </div>
 </div>
@@ -348,27 +345,21 @@ cd cloudnative_sample_app/</code></pre>
 &lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"&gt;
     &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
-
-    &lt;groupId&gt;projects&lt;/groupId&gt;
-    &lt;artifactId&gt;cloudnativesampleapp&lt;/artifactId&gt;
-    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
-
-    &lt;properties&gt;
-        &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
-        &lt;project.reporting.outputEncoding&gt;UTF-8&lt;/project.reporting.outputEncoding&gt;
-        &lt;maven.compiler.source&gt;1.8&lt;/maven.compiler.source&gt;
-        &lt;maven.compiler.target&gt;1.8&lt;/maven.compiler.target&gt;
-        &lt;java.version&gt;1.8&lt;/java.version&gt;
-        &lt;spring-cloud.version&gt;Dalston.SR4&lt;/spring-cloud.version&gt;
-
-        &lt;app.name&gt;cloudnativesampleapp&lt;/app.name&gt;
-    &lt;/properties&gt;
-
     &lt;parent&gt;
         &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
         &lt;artifactId&gt;spring-boot-starter-parent&lt;/artifactId&gt;
-        &lt;version&gt;1.5.15.RELEASE&lt;/version&gt;
+        &lt;version&gt;2.1.7.RELEASE&lt;/version&gt;
+        &lt;relativePath/&gt;
     &lt;/parent&gt;
+    &lt;groupId&gt;projects&lt;/groupId&gt;
+    &lt;artifactId&gt;cloudnativesampleapp&lt;/artifactId&gt;
+    &lt;version&gt;1.0-SNAPSHOT&lt;/version&gt;
+    &lt;name&gt;cloudnativesampleapp&lt;/name&gt;
+    &lt;description&gt;Cloudnative sample application&lt;/description&gt;
+
+    &lt;properties&gt;
+        &lt;java.version&gt;1.8&lt;/java.version&gt;
+    &lt;/properties&gt;
 
     &lt;dependencies&gt;
         &lt;dependency&gt;
@@ -377,7 +368,7 @@ cd cloudnative_sample_app/</code></pre>
         &lt;/dependency&gt;
         &lt;dependency&gt;
             &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
-            &lt;artifactId&gt;spring-boot-actuator&lt;/artifactId&gt;
+            &lt;artifactId&gt;spring-boot-starter-actuator&lt;/artifactId&gt;
         &lt;/dependency&gt;
         &lt;dependency&gt;
             &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
@@ -419,7 +410,7 @@ cd cloudnative_sample_app/</code></pre>
 <p>The <code>spring-boot-starter-web</code> dependency configures the dependencies that are needed for a web application.</p>
 </li>
 <li>
-<p>The <code>spring-boot-actuator</code> dependency helps you monitor and manage your application.</p>
+<p>The <code>spring-boot-starter-actuator</code> dependency helps you monitor and manage your application.</p>
 </li>
 <li>
 <p>The <code>spring-boot-starter-test</code> dependency configures the dependencies that are needed for testing applications with libraries including JUnit, Hamcrest and Mockito.</p>
@@ -573,7 +564,7 @@ info.app.description=Demo application for bootcamp
 info.app.version=1.0.0
 
 # Enabling all management endpoints
-management.security.enabled=false</code></pre>
+management.endpoints.web.exposure.include=*</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -591,28 +582,7 @@ private String welcomeMsg;</code></pre>
 <h2 id="_health_check"><a class="anchor" href="#_health_check"></a>Health check</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Spring boot actuator brings us feature which allows us to monitor the health of our application. You can access it at <code>/health</code> endpoint. This endpoint is not sensitive by default and you don&#8217;t need any admin permissions for that.</p>
-</div>
-<div class="paragraph">
-<p>To access this end point, run <code>cat src/main/application/rest/HealthEndpoint.java</code></p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-java hljs" data-lang="java">package application.rest;
-
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthIndicator;
-import org.springframework.stereotype.Component;
-
-@Component
-public class HealthEndpoint implements HealthIndicator {
-
-  @Override
-  public Health health() {
-    return Health.up().build();
-  }
-}</code></pre>
-</div>
+<p>Spring boot actuator brings us feature which allows us to monitor the health of our application. You can access it at <code>/actuator/health</code> endpoint. This endpoint is not sensitive by default and you don&#8217;t need any admin permissions for that.</p>
 </div>
 </div>
 </div>
@@ -620,7 +590,7 @@ public class HealthEndpoint implements HealthIndicator {
 <h2 id="_metrics"><a class="anchor" href="#_metrics"></a>Metrics</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Spring boot actuator brings us feature which allows us to gather metrics for your application. You can access it at <code>/metrics</code> endpoint. This endpoint is sensitive and you need admin permissions for that.</p>
+<p>Spring boot actuator brings us feature which allows us to gather metrics for your application. You can access it at <code>/actuator/metrics</code> endpoint. This endpoint is sensitive and you need admin permissions for that.</p>
 </div>
 </div>
 </div>
@@ -628,7 +598,7 @@ public class HealthEndpoint implements HealthIndicator {
 <h2 id="_tracing"><a class="anchor" href="#_tracing"></a>Tracing</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Spring boot actuator brings us feature which displays trace information. You can access it at <code>/trace</code> endpoint. This endpoint is sensitive and you need admin permissions for that.</p>
+<p>Spring boot actuator brings us feature which displays trace information. You can access it at <code>/actuator/httptrace</code> endpoint. This endpoint is sensitive and you need admin permissions for that.</p>
 </div>
 </div>
 </div>
@@ -712,7 +682,7 @@ public class SwaggerConfig {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">mvn install</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">./mvnw install</code></pre>
 </div>
 </div>
 <div class="ulist">
@@ -761,7 +731,7 @@ public class SwaggerConfig {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl http://localhost:8080/info</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl http://localhost:8080/actuator/info</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -781,7 +751,7 @@ public class SwaggerConfig {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl http://localhost:8080/health</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl http://localhost:8080/actuator/health</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -801,7 +771,7 @@ public class SwaggerConfig {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl http://localhost:8080/metrics</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl http://localhost:8080/actuator/metrics</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -821,7 +791,7 @@ public class SwaggerConfig {
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl http://localhost:8080/trace</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl http://localhost:8080/actuator/httptrace</code></pre>
 </div>
 </div>
 <div class="paragraph">

@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>Lab 3 - Rollout Updates for Kubernetes Application :: Learning Cloudnative 101</title>
+    <title>Lab 4 - Rollout Updates for Kubernetes Application :: Learning Cloudnative 101</title>
     <link rel="canonical" href="https://ibm-cloud-architecture.github.io/learning-cloudnative-101/web/1.0.0/Kubernetes_Module/Lab4.html">
     <meta name="generator" content="Antora 2.0.1">
     <link rel="stylesheet" href="../../../_/css/site.css">
@@ -79,13 +79,13 @@
 </ul>
   </li>
   <li class="nav-item is-current-page" data-depth="2">
-    <a class="nav-link" href="Lab4.html">Lab 4: Update Kubernetes App (TODO)</a>
+    <a class="nav-link" href="Lab4.html">Lab 4: Update Kubernetes App</a>
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="operators.html">Helm/Operator Patterns</a>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="Lab5.html">Lab 5: Helm Templates (TODO)</a>
+    <a class="nav-link" href="Lab5.html">Lab 5: Helm Templates</a>
   </li>
 </ul>
   </li>
@@ -166,20 +166,19 @@
   <ul>
     <li><a href="../Cloud_Native_Module/Cloudnative_Overview.html">Learning Cloudnative 101</a></li>
     <li>Kubernetes</li>
-    <li><a href="Lab4.html">Lab 4: Update Kubernetes App (TODO)</a></li>
+    <li><a href="Lab4.html">Lab 4: Update Kubernetes App</a></li>
   </ul>
 </nav>
   <div class="edit-this-page"><a href="https://github.com/ibm-cloud-architecture/learning-cloudnative-101/edit/master/modules/ROOT/pages/Kubernetes_Module/Lab4.adoc">Edit this Page</a></div>
 </div>
 <article class="doc">
-<h1 class="page">Lab 3 - Rollout Updates for Kubernetes Application</h1>
+<h1 class="page">Lab 4 - Rollout Updates for Kubernetes Application</h1>
 <div id="toc" class="toc">
 <div id="toctitle">Table of Contents</div>
 <ul class="sectlevel1">
 <li><a href="#_introduction">Introduction</a></li>
 <li><a href="#_prerequisites">Prerequisites</a></li>
 <li><a href="#_scaling_out_your_app">Scaling out your app</a></li>
-<li><a href="#_scaling_out_your_app_2">Scaling out your app</a></li>
 <li><a href="#_update_your_app">Update your app</a></li>
 <li><a href="#_conclusion">Conclusion</a></li>
 </ul>
@@ -209,6 +208,9 @@
 <li>
 <p>Downloaded and installed the Kubernetes CLI at <a href="https://kubernetes.io/docs/tasks/tools/install-kubectl/">Kubernetes CLI Installation</a>. Follow the instructions for your computer&#8217;s operating system.</p>
 </li>
+<li>
+<p>Installing <code>watch</code> command - For Mac run <code>brew install watch</code>. No install for Windows</p>
+</li>
 </ul>
 </div>
 </div>
@@ -217,15 +219,58 @@
 <h2 id="_scaling_out_your_app"><a class="anchor" href="#_scaling_out_your_app"></a>Scaling out your app</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>In this section we</p>
+<p>Now that we have successfully deployed an application on Kubernetes, the next step is to scale up the application to properly handle more traffic and have some redundancy to prevent any downtime.</p>
 </div>
-</div>
-</div>
-<div class="sect1">
-<h2 id="_scaling_out_your_app_2"><a class="anchor" href="#_scaling_out_your_app_2"></a>Scaling out your app</h2>
-<div class="sectionbody">
 <div class="paragraph">
-<p>TODO:</p>
+<p>Let&#8217;s first check our current deployment running on OpenShift. (If there is no deployment refer to <a href="Lab3.html" class="page">Lab 3:Deploy Kubernetes Application</a>)</p>
+</div>
+<div class="listingblock">
+<div class="title">Check Deployment</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get deployment greetings-deployment</code></pre>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../_images/current-deployment.png" alt="current deployment">
+</div>
+</div>
+<div class="paragraph">
+<p>We can see that only 1 replica of the application is currently desired and is all that is running.  Now let&#8217;s make it to where we have 3 desired replicas and see how Kubernetes automatically deploys more replicas to meet the desired state by using the <code>oc scale</code> command.</p>
+</div>
+<div class="listingblock">
+<div class="title">More Replicas</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc scale deployment greetings-deployment --replicas 3</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The command above will scale the sample application to 3 replicas and you can verify the replicas by running one of the following:</p>
+</div>
+<div class="listingblock">
+<div class="title">Verify Replicas</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get deployment greetings-deployment</code></pre>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../_images/scaled-deploy.png" alt="scaled deploy">
+</div>
+</div>
+<div class="listingblock">
+<div class="title">Verify Pods</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get pods</code></pre>
+</div>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="../_images/scaled-pods.png" alt="scaled pods">
+</div>
+</div>
+<div class="paragraph">
+<p>Replication is easy with Kubernetes and can be changed with one simple command at any time.  Next lets look at updating the replicas with new verions of code.</p>
 </div>
 </div>
 </div>
@@ -233,7 +278,50 @@
 <h2 id="_update_your_app"><a class="anchor" href="#_update_your_app"></a>Update your app</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>TODO:</p>
+<p>Updating applications with little to no downtime is a huge advantage for using Kubernetes.  In this next section we are going to walkthrough how easy it is.</p>
+</div>
+<div class="paragraph">
+<p>The first step is changing the docker image to the new version (v2) that we have pushed to Docker Hub and begin the rolling update:</p>
+</div>
+<div class="listingblock">
+<div class="title">Updating the Deployment</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc set image deployment/greetings-deployment greeting=ibmcase/greeting:v2</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Next, we want to monitor the rollout and watch as containers are created and deployed.</p>
+</div>
+<div class="listingblock">
+<div class="title">Monitor the Rollout</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc rollout status deployment/greetings-deployment</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Finally, once the rollout is complete we want to recheck our application and see the new changes that were pushed.</p>
+</div>
+<div class="paragraph">
+<p>First we need to get the <code>route</code> in order to curl the application</p>
+</div>
+<div class="listingblock">
+<div class="title">Get Route</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get route</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Next copy the <code>PATH</code> it will look similar to <code>greeting-service-deploy-sample.gse-cloud-native-fa9ee67c9ab6a7791435450358e564cc-0001.us-east.containers.appdomain.cloud</code>.
+Finally we want to run a <code>curl</code> against the copied path with <code>/greeting</code> appended on the end to see the response.</p>
+</div>
+<div class="listingblock">
+<div class="title">Curl</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl PATH/greeting</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should get a response similar to: <code>Welcome to Version 2 of the Cloud Native Bootcamp Application !!!</code></p>
 </div>
 </div>
 </div>
@@ -241,7 +329,20 @@
 <h2 id="_conclusion"><a class="anchor" href="#_conclusion"></a>Conclusion</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Congratulations !!!</p>
+<p>You have successfully completed this lab! Let&#8217;s take a look at what you learned and did today:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Scaled a deployed application to 3 replicas.</p>
+</li>
+<li>
+<p>Accessed the application through a CURL command.</p>
+</li>
+<li>
+<p>Updated a deployed application to a newer image version.</p>
+</li>
+</ul>
 </div>
 </div>
 </div>

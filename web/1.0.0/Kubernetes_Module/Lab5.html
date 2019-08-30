@@ -79,13 +79,13 @@
 </ul>
   </li>
   <li class="nav-item" data-depth="2">
-    <a class="nav-link" href="Lab4.html">Lab 4: Update Kubernetes App (TODO)</a>
+    <a class="nav-link" href="Lab4.html">Lab 4: Update Kubernetes App</a>
   </li>
   <li class="nav-item" data-depth="2">
     <a class="nav-link" href="operators.html">Helm/Operator Patterns</a>
   </li>
   <li class="nav-item is-current-page" data-depth="2">
-    <a class="nav-link" href="Lab5.html">Lab 5: Helm Templates (TODO)</a>
+    <a class="nav-link" href="Lab5.html">Lab 5: Helm Templates</a>
   </li>
 </ul>
   </li>
@@ -166,7 +166,7 @@
   <ul>
     <li><a href="../Cloud_Native_Module/Cloudnative_Overview.html">Learning Cloudnative 101</a></li>
     <li>Kubernetes</li>
-    <li><a href="Lab5.html">Lab 5: Helm Templates (TODO)</a></li>
+    <li><a href="Lab5.html">Lab 5: Helm Templates</a></li>
   </ul>
 </nav>
   <div class="edit-this-page"><a href="https://github.com/ibm-cloud-architecture/learning-cloudnative-101/edit/master/modules/ROOT/pages/Kubernetes_Module/Lab5.adoc">Edit this Page</a></div>
@@ -183,11 +183,12 @@
 <li><a href="#_getting_the_sample_application">Getting the Sample Application</a></li>
 <li><a href="#_deploying_the_sample_application_using_helm">Deploying the Sample Application using Helm</a>
 <ul class="sectlevel2">
-<li><a href="#_looking_at_the_charts">Looking at the Charts</a></li>
 <li><a href="#_checking_the_namespace">Checking the Namespace</a></li>
-<li><a href="#_application_deploy">Application Deploy</a></li>
+<li><a href="#_application_deployment">Application Deployment</a></li>
+<li><a href="#_accessing_the_application">Accessing the Application</a></li>
 </ul>
 </li>
+<li><a href="#_conclusion">Conclusion</a></li>
 </ul>
 </div>
 <div class="sect1">
@@ -283,10 +284,6 @@
 The helm charts are already pre-created in the <code>/chart</code> directory of the application directory.</p>
 </div>
 <div class="sect2">
-<h3 id="_looking_at_the_charts"><a class="anchor" href="#_looking_at_the_charts"></a>Looking at the Charts</h3>
-
-</div>
-<div class="sect2">
 <h3 id="_checking_the_namespace"><a class="anchor" href="#_checking_the_namespace"></a>Checking the Namespace</h3>
 <div class="paragraph">
 <p>To check the namespace you are deploying your application to run the following command:</p>
@@ -294,7 +291,7 @@ The helm charts are already pre-created in the <code>/chart</code> directory of 
 <div class="listingblock">
 <div class="title">View Namespace</div>
 <div class="content">
-<pre>oc projects</pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc projects</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -302,28 +299,98 @@ The helm charts are already pre-created in the <code>/chart</code> directory of 
 </div>
 </div>
 <div class="sect2">
-<h3 id="_application_deploy"><a class="anchor" href="#_application_deploy"></a>Application Deploy</h3>
+<h3 id="_application_deployment"><a class="anchor" href="#_application_deployment"></a>Application Deployment</h3>
 <div class="paragraph">
-<p>To deploy your application we are going to use the Helm CLI Commands. First start by making sure the Helm Tiller is properly installed:</p>
+<p>To deploy the Application we first want to ensure that we have helm template charts created. In this sample app we won&#8217;t have to create any templates, but we are going to modify the deployment.yaml using templates. Let&#8217;s start by doing that.</p>
+</div>
+<div class="paragraph">
+<p>In the <code>chart/cloudnativesampleapp</code> directory in your sample application run:</p>
 </div>
 <div class="listingblock">
-<div class="title">Helm Tiller Install</div>
+<div class="title">Changing Replica Count</div>
 <div class="content">
-<pre>helm init</pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">helm template . --set replicaCount=2 &gt; deployment.yaml</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Once installed we can deploy our charts. To do that run the following:</p>
+<p>That will set the replicaCount in the deployment file to 2. Next we need to deploy the new change by running the following:</p>
 </div>
 <div class="listingblock">
-<div class="title">Helm Install</div>
+<div class="title">Deploy Deployment</div>
 <div class="content">
-<pre>helm install --name cloudnativesample chart/cloudnativesampleapp</pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc apply -f deployment.yaml</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Make sure when you run this command you are in the home directory of the sample application.</p>
+<p>And that&#8217;s it. You have now deployed using a Helm Template.</p>
 </div>
+<div class="paragraph">
+<p>To verify your deployment just run:</p>
+</div>
+<div class="listingblock">
+<div class="title">Verify Deployment</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get deployment</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_accessing_the_application"><a class="anchor" href="#_accessing_the_application"></a>Accessing the Application</h3>
+<div class="paragraph">
+<p>To access the application we need to expose the service.  To do that we will run the following:</p>
+</div>
+<div class="listingblock">
+<div class="title">Expose Service</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc expose service cloudnativesampleapp-service</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Next, we need to find the route that was exposed for the application. We find that by running:</p>
+</div>
+<div class="listingblock">
+<div class="title">Service Route</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">oc get route</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Next copy the <code>PATH</code> it will look similar to <code>greeting-service-deploy-sample.gse-cloud-native-fa9ee67c9ab6a7791435450358e564cc-0001.us-east.containers.appdomain.cloud</code>.
+Finally we want to run a <code>curl</code> against the copied path with <code>/greeting</code> appended on the end to see the response.</p>
+</div>
+<div class="listingblock">
+<div class="title">Curl</div>
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl PATH/greeting</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You should get a response similar to: <code>Welcome to Cloudnative bootcamp !!!</code></p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_conclusion"><a class="anchor" href="#_conclusion"></a>Conclusion</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>You have successfully completed this lab! Let&#8217;s take a look at what you learned and did today:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Modified a Helm Chart value.</p>
+</li>
+<li>
+<p>Deployed an application using a Helm Chart.</p>
+</li>
+<li>
+<p>Exposed the application to the internet.</p>
+</li>
+<li>
+<p>Accessed the deployed application via a CURL command.</p>
+</li>
+</ul>
 </div>
 </div>
 </div>

@@ -375,13 +375,24 @@ $ cd cloudnative_sample_app/</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre>FROM ibmjava:8-sfj
-LABEL maintainer="IBM Java Engineering at IBM Cloud"
+<pre>FROM openliberty/open-liberty:springBoot2-ubi-min as staging
+USER root
+COPY target/cloudnativesampleapp-1.0-SNAPSHOT.jar /staging/fatClinic.jar
 
-COPY target/cloudnativesampleapp-1.0-SNAPSHOT.jar /app.jar
+RUN springBootUtility thin \
+ --sourceAppPath=/staging/fatClinic.jar \
+ --targetThinAppPath=/staging/thinClinic.jar \
+ --targetLibCachePath=/staging/lib.index.cache
 
-ENV JAVA_OPTS=""
-ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar /app.jar" ]</pre>
+FROM openliberty/open-liberty:springBoot2-ubi-min
+USER root
+COPY --from=staging /staging/lib.index.cache /opt/ol/wlp/usr/shared/resources/lib.index.cache
+COPY --from=staging /staging/thinClinic.jar /config/dropins/spring/thinClinic.jar
+
+RUN chown -R 1001.0 /config &amp;&amp; chmod -R g+rw /config
+RUN chown -R 1001.0 /opt/ol/wlp/usr/shared/resources/lib.index.cache &amp;&amp; chmod -R g+rw /opt/ol/wlp/usr/shared/resources/lib.index.cache
+
+USER 1001</pre>
 </div>
 </div>
 <div class="ulist">
@@ -390,21 +401,18 @@ ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urando
 <p>Using the <code>FROM</code> instruction, we provide the name and tag of an image that should be used as our base. This must always be the first instruction in the Dockerfile.</p>
 </li>
 <li>
-<p><code>LABEL</code> instruction helps us to store metadata.</p>
+<p><code>USER</code> instruction sets the username (or UID).</p>
 </li>
 <li>
 <p>Using <code>COPY</code> instruction, we copy new contents from the source filesystem to the container filesystem.</p>
 </li>
 <li>
-<p><code>ENV</code> instruction helps us to pass environment variables.</p>
-</li>
-<li>
-<p><code>ENTRYPOINT</code> allows you to configure a container that runs as an executable.</p>
+<p><code>RUN</code> instruction executes the commands.</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>Once, you have the docker file ready, the nest step is to build it. The <code>build</code> command allows you to build a docker image which you can later run as a container.</p>
+<p>Once, you have the docker file ready, the next step is to build it. The <code>build</code> command allows you to build a docker image which you can later run as a container.</p>
 </div>
 <div class="paragraph">
 <p>The command is as follows.</p>
@@ -431,33 +439,56 @@ ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urando
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ docker build -t greeting:v1.0.0 .
-Sending build context to Docker daemon  28.99MB
-Step 1/5 : FROM ibmjava:8-sfj
-8-sfj: Pulling from library/ibmjava
-35b42117c431: Pull complete
-ad9c569a8d98: Pull complete
-293b44f45162: Pull complete
-0c175077525d: Pull complete
-e2b6d4d0dc10: Pull complete
-91f6e1d5f103: Pull complete
-Digest: sha256:aaef6e7d14b3c63b8df9eaea45334d3cc7678ba3878dfcb630be8706719df97e
-Status: Downloaded newer image for ibmjava:8-sfj
- ---&gt; ab418b419902
-Step 2/5 : LABEL maintainer="IBM Java Engineering at IBM Cloud"
- ---&gt; Running in 7a8c48bc9650
-Removing intermediate container 7a8c48bc9650
- ---&gt; d0693367c12c
-Step 3/5 : COPY target/cloudnativesampleapp-1.0-SNAPSHOT.jar /app.jar
- ---&gt; ad42c72c8e8a
-Step 4/5 : ENV JAVA_OPTS=""
- ---&gt; Running in 805f2d09b693
-Removing intermediate container 805f2d09b693
- ---&gt; 3200b25a9898
-Step 5/5 : ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar /app.jar" ]
- ---&gt; Running in 55bdf582dbb6
-Removing intermediate container 55bdf582dbb6
- ---&gt; 3ae7dfc4b794
-Successfully built 3ae7dfc4b794
+Sending build context to Docker daemon  22.17MB
+Step 1/11 : FROM openliberty/open-liberty:springBoot2-ubi-min as staging
+springBoot2-ubi-min: Pulling from openliberty/open-liberty
+949de0c45264: Pull complete
+7e9d54341c0e: Pull complete
+32db7409eb5f: Pull complete
+7640ec54eca1: Pull complete
+f081c7c2f0e0: Pull complete
+51c03cd5ee07: Pull complete
+f716fe3cdacf: Pull complete
+daed7a0739aa: Pull complete
+d876e280fa2d: Pull complete
+Digest: sha256:d51b2eb61d32599712c333f8d6a4e4297cb57d6c7981ab15a14f744d46710b0f
+Status: Downloaded newer image for openliberty/open-liberty:springBoot2-ubi-min
+ ---&gt; bcfcb2c5ce16
+Step 2/11 : USER root
+ ---&gt; Running in 26a12ce640db
+Removing intermediate container 26a12ce640db
+ ---&gt; 9e891aecf123
+Step 3/11 : COPY target/cloudnativesampleapp-1.0-SNAPSHOT.jar /staging/fatClinic.jar
+ ---&gt; 7c0f26bc76e7
+Step 4/11 : RUN springBootUtility thin  --sourceAppPath=/staging/fatClinic.jar  --targetThinAppPath=/staging/thinClinic.jar  --targetLibCachePath=/staging/lib.index.cache
+ ---&gt; Running in 2d68ff957a28
+Creating a thin application from: /staging/fatClinic.jar
+Library cache: /staging/lib.index.cache
+Thin application: /staging/thinClinic.jar
+Removing intermediate container 2d68ff957a28
+ ---&gt; f9cad508cb4c
+Step 5/11 : FROM openliberty/open-liberty:springBoot2-ubi-min
+ ---&gt; bcfcb2c5ce16
+Step 6/11 : USER root
+ ---&gt; Using cache
+ ---&gt; 9e891aecf123
+Step 7/11 : COPY --from=staging /staging/lib.index.cache /opt/ol/wlp/usr/shared/resources/lib.index.cache
+ ---&gt; 0e27922ad7a6
+Step 8/11 : COPY --from=staging /staging/thinClinic.jar /config/dropins/spring/thinClinic.jar
+ ---&gt; 93bd8360110b
+Step 9/11 : RUN chown -R 1001.0 /config &amp;&amp; chmod -R g+rw /config
+ ---&gt; Running in ea42c7b6f92a
+Removing intermediate container ea42c7b6f92a
+ ---&gt; 764ef4196d1b
+Step 10/11 : RUN chown -R 1001.0 /opt/ol/wlp/usr/shared/resources/lib.index.cache &amp;&amp; chmod -R g+rw /opt/ol/wlp/usr/shared/resources/lib.index.cache
+ ---&gt; Running in 2b1738422b89
+Removing intermediate container 2b1738422b89
+ ---&gt; af170c7af294
+Step 11/11 : USER 1001
+ ---&gt; Running in 98fc928c9778
+Removing intermediate container 98fc928c9778
+ ---&gt; 89bd7032fdee
+Successfully built 89bd7032fdee
 Successfully tagged greeting:v1.0.0</code></pre>
 </div>
 </div>
@@ -478,10 +509,10 @@ Successfully tagged greeting:v1.0.0</code></pre>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ docker images
-REPOSITORY          TAG                 IMAGE ID            CREATED              SIZE
-greeting            v1.0.0              3ae7dfc4b794        About a minute ago   251MB
-ibmjava             8-sfj               ab418b419902        9 days ago           222MB
-hello-world         latest              fce289e99eb9        5 months ago         1.84kB</code></pre>
+REPOSITORY                           TAG                   IMAGE ID            CREATED             SIZE
+greeting                             v1.0.0                89bd7032fdee        51 seconds ago      402MB
+openliberty/open-liberty             springBoot2-ubi-min   bcfcb2c5ce16        6 days ago          366MB
+hello-world                          latest                f9cad508cb4c        5 months ago        1.84kB</code></pre>
 </div>
 </div>
 </div>
@@ -517,7 +548,7 @@ hello-world         latest              fce289e99eb9        5 months ago        
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ docker run -p 8080:8080 -d --name greeting greeting:v1.0.0</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ docker run -p 9080:9080 -d --name greeting greeting:v1.0.0</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -525,8 +556,8 @@ hello-world         latest              fce289e99eb9        5 months ago        
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ docker run -p 8080:8080 -d --name greeting greeting:v1.0.0
-a74b91789b29af6e7be92b30d0e68eef852bfb24336a44ef1485bb58becbd664</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ docker run -p 9080:9080 -d --name greeting greeting:v1.0.0
+bc2dc95a6bd1f51a226b291999da9031f4443096c1462cb3fead3df36613b753</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -534,13 +565,13 @@ a74b91789b29af6e7be92b30d0e68eef852bfb24336a44ef1485bb58becbd664</code></pre>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ docker run -p 8080:8080 -d --name greeting greeting:v1.0.0
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ docker run -p 9080:9080 -d --name greeting greeting:v1.0.0
 docker: Error response from daemon: Conflict. The container name "/greeting" is already in use by container "a74b91789b29af6e7be92b30d0e68eef852bfb24336a44ef1485bb58becbd664". You have to remove (or rename) that container to be able to reuse that name.
 See 'docker run --help'.</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>It is a good to name your containers. Naming helps you to discover your service easily.</p>
+<p>It is a good practice to name your containers. Naming helps you to discover your service easily.</p>
 </div>
 <div class="ulist">
 <ul>
@@ -560,8 +591,8 @@ See 'docker run --help'.</code></pre>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ docker ps
-CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                    NAMES
-a74b91789b29        greeting:v1.0.0     "sh -c 'java $JAVA_O…"   2 minutes ago       Up 2 minutes        0.0.0.0:8080-&gt;8080/tcp   greeting</code></pre>
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                              NAMES
+bc2dc95a6bd1        greeting:v1.0.0     "/opt/ol/helpers/run…"   18 minutes ago      Up 18 minutes       0.0.0.0:9080-&gt;9080/tcp, 9443/tcp   greeting</code></pre>
 </div>
 </div>
 <div class="ulist">
@@ -590,12 +621,13 @@ a74b91789b29        greeting:v1.0.0     "sh -c 'java $JAVA_O…"   2 minutes ago
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ docker inspect greeting
 [
     {
-        "Id": "992723e38ecbdcd50a08d2acc0848e3fb93f182d6e14141e892de5a3f02e14be",
-        "Created": "2019-07-15T21:35:18.0277554Z",
-        "Path": "sh",
+        "Id": "bc2dc95a6bd1f51a226b291999da9031f4443096c1462cb3fead3df36613b753",
+        "Created": "2019-08-30T16:56:40.2081539Z",
+        "Path": "/opt/ol/helpers/runtime/docker-server.sh",
         "Args": [
-            "-c",
-            "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar /app.jar"
+            "/opt/ol/wlp/bin/server",
+            "run",
+            "defaultServer"
         ],
         "State": {
             "Status": "running",
@@ -604,10 +636,10 @@ a74b91789b29        greeting:v1.0.0     "sh -c 'java $JAVA_O…"   2 minutes ago
             "Restarting": false,
             "OOMKilled": false,
             "Dead": false,
-            "Pid": 46656,
+            "Pid": 27548,
             "ExitCode": 0,
             "Error": "",
-            "StartedAt": "2019-07-15T21:35:19.0475638Z",
+            "StartedAt": "2019-08-30T16:56:41.0927889Z",
             "FinishedAt": "0001-01-01T00:00:00Z"
         },
         ..........
@@ -645,15 +677,26 @@ a74b91789b29        greeting:v1.0.0     "sh -c 'java $JAVA_O…"   2 minutes ago
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">mework.cloud.context.properties:name=configurationPropertiesRebinder,context=86174590,type=ConfigurationPropertiesRebinder]
-2019-07-15 21:35:31.136  INFO 6 --- [           main] o.s.j.e.a.AnnotationMBeanExporter        : Located managed bean 'refreshEndpoint': registering with JMX server as MBean [org.springframework.cloud.endpoint:name=refreshEndpoint,type=RefreshEndpoint]
-2019-07-15 21:35:31.312  INFO 6 --- [           main] o.s.c.support.DefaultLifecycleProcessor  : Starting beans in phase 0
-2019-07-15 21:35:31.398  INFO 6 --- [           main] o.s.c.support.DefaultLifecycleProcessor  : Starting beans in phase 2147483647
-2019-07-15 21:35:31.399  INFO 6 --- [           main] d.s.w.p.DocumentationPluginsBootstrapper : Context refreshed
-2019-07-15 21:35:31.435  INFO 6 --- [           main] d.s.w.p.DocumentationPluginsBootstrapper : Found 1 custom documentation plugin(s)
-2019-07-15 21:35:31.468  INFO 6 --- [           main] s.d.s.w.s.ApiListingReferenceScanner     : Scanning for api listing references
-2019-07-15 21:35:31.779  INFO 6 --- [           main] s.b.c.e.t.TomcatEmbeddedServletContainer : Tomcat started on port(s): 8080 (http)
-2019-07-15 21:35:31.788  INFO 6 --- [           main] application.SBApplication                : Started SBApplication in 11.532 seconds (JVM running for 12.725)</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">.   ____          _            __ _ _
+/\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+\\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+'  |____| .__|_| |_|_| |_\__, | / / / /
+=========|_|==============|___/=/_/_/_/
+:: Spring Boot ::        (v2.1.7.RELEASE)
+2019-08-30 16:57:01.494  INFO 1 --- [ecutor-thread-5] application.SBApplication                : Starting SBApplication on bc2dc95a6bd1 with PID 1 (/opt/ol/wlp/usr/servers/defaultServer/dropins/spring/thinClinic.jar started by default in /opt/ol/wlp/output/defaultServer)
+2019-08-30 16:57:01.601  INFO 1 --- [ecutor-thread-5] application.SBApplication                : No active profile set, falling back to default profiles: default
+[AUDIT   ] CWWKT0016I: Web application available (default_host): http://bc2dc95a6bd1:9080/
+2019-08-30 16:57:09.641  INFO 1 --- [cutor-thread-25] o.s.web.context.ContextLoader            : Root WebApplicationContext: initialization completed in 7672 ms
+2019-08-30 16:57:12.279  INFO 1 --- [ecutor-thread-5] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 15 endpoint(s) beneath base path '/actuator'
+2019-08-30 16:57:12.974  INFO 1 --- [ecutor-thread-5] o.s.s.concurrent.ThreadPoolTaskExecutor  : Initializing ExecutorService 'applicationTaskExecutor'
+2019-08-30 16:57:13.860  INFO 1 --- [ecutor-thread-5] d.s.w.p.DocumentationPluginsBootstrapper : Context refreshed
+2019-08-30 16:57:13.961  INFO 1 --- [ecutor-thread-5] d.s.w.p.DocumentationPluginsBootstrapper : Found 1 custom documentation plugin(s)
+2019-08-30 16:57:14.020  INFO 1 --- [ecutor-thread-5] s.d.s.w.s.ApiListingReferenceScanner     : Scanning for api listing references
+2019-08-30 16:57:14.504  INFO 1 --- [ecutor-thread-5] application.SBApplication                : Started SBApplication in 17.584 seconds (JVM running for 33.368)
+[AUDIT   ] CWWKZ0001I: Application thinClinic started in 21.090 seconds.
+[AUDIT   ] CWWKF0012I: The server installed the following features: [el-3.0, jsp-2.3, servlet-4.0, springBoot-2.0, ssl-1.0, transportSecurity-1.0, websocket-1.1].
+[AUDIT   ] CWWKF0011I: The defaultServer server is ready to run a smarter planet. The defaultServer server started in 33.103 seconds.</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -665,7 +708,7 @@ a74b91789b29        greeting:v1.0.0     "sh -c 'java $JAVA_O…"   2 minutes ago
 <div class="ulist">
 <ul>
 <li>
-<p>To access the application, open the browser and access <a href="http://localhost:8080/greeting?name=John" class="bare">http://localhost:8080/greeting?name=John</a>.</p>
+<p>To access the application, open the browser and access <a href="http://localhost:9080/greeting?name=John" class="bare">http://localhost:9080/greeting?name=John</a>.</p>
 </li>
 </ul>
 </div>
@@ -927,12 +970,8 @@ ADD . /usr/src/app
 
 RUN bash -c " mvn clean install"
 
-FROM ibmjava:8-sfj as runner
-
-# Install Extra Packages
-RUN apt-get update \
- &amp;&amp; apt-get install -y jq bash bc ca-certificates curl \
- &amp;&amp; update-ca-certificates
+FROM openliberty/open-liberty:springBoot2-ubi-min as staging
+USER root
 
 # Create app directory
 ENV APP_HOME=/app
@@ -942,8 +981,20 @@ WORKDIR $APP_HOME
 COPY --from=builder /usr/src/app/target/cloudnativesampleapp-1.0-SNAPSHOT.jar $APP_HOME
 RUN mv ./cloudnativesampleapp-1.0-SNAPSHOT.jar app.jar
 
-ENV JAVA_OPTS=""
-ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar ./app.jar" ]</pre>
+RUN springBootUtility thin \
+ --sourceAppPath=app.jar \
+ --targetThinAppPath=/staging/thinClinic.jar \
+ --targetLibCachePath=/staging/lib.index.cache
+
+FROM openliberty/open-liberty:springBoot2-ubi-min
+USER root
+COPY --from=staging /staging/lib.index.cache /opt/ol/wlp/usr/shared/resources/lib.index.cache
+COPY --from=staging /staging/thinClinic.jar /config/dropins/spring/thinClinic.jar
+
+RUN chown -R 1001.0 /config &amp;&amp; chmod -R g+rw /config
+RUN chown -R 1001.0 /opt/ol/wlp/usr/shared/resources/lib.index.cache &amp;&amp; chmod -R g+rw /opt/ol/wlp/usr/shared/resources/lib.index.cache
+
+USER 1001</pre>
 </div>
 </div>
 <div class="paragraph">
@@ -958,12 +1009,12 @@ ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urando
 <p>The first one uses <code>maven:3.3-jdk-8</code> as its base image to download and build the project and its dependencies using Maven.</p>
 </li>
 <li>
-<p>The second stage uses <code>ibmjava:8-sfj</code> as its base image to run the compiled code from the previous stage.</p>
+<p>The second stage uses <code>openliberty/open-liberty:springBoot2-ubi-min</code> as its base image to run the compiled code from the previous stage.</p>
 </li>
 </ul>
 </div>
 <div class="paragraph">
-<p>The advantage of using the multi-stage builds approach is that the resulting image only uses the base image of the last stage. Meaning that in our case, we will only end up with the <code>ibmjava:8-sfj</code> as our base image, which is much tinier than having an image that has both Maven and the JRE.</p>
+<p>The advantage of using the multi-stage builds approach is that the resulting image only uses the base image of the last stage. Meaning that in our case, we will only end up with the <code>openliberty/open-liberty:springBoot2-ubi-min</code> as our base image, which is much tinier than having an image that has both Maven and the JRE.</p>
 </div>
 <div class="paragraph">
 <p>By using the multi-stage builds approach when it makes sense to use it, you will end up with much lighter and easier to maintain images, which can save you space on your Docker Registry. Also, having tinier images usually means less resource consumption on your worker nodes, which can result cost-savings.</p>
@@ -982,8 +1033,8 @@ ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urando
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ docker build -f Dockerfile.multistage -t greeting:v2.0.0 .
-Sending build context to Docker daemon  28.99MB
-Step 1/15 : FROM maven:3.3-jdk-8 as builder
+Sending build context to Docker daemon  22.17MB
+Step 1/21 : FROM maven:3.3-jdk-8 as builder
 3.3-jdk-8: Pulling from library/maven
 6d827a3ef358: Pull complete
 2726297beaf1: Pull complete
@@ -999,39 +1050,41 @@ e4cf3e9f705c: Pull complete
 Digest: sha256:18e8bd367c73c93e29d62571ee235e106b18bf6718aeb235c7a07840328bba71
 Status: Downloaded newer image for maven:3.3-jdk-8
  ---&gt; 9997d8483b2f
-Step 2/15 : ENV BUILD_DIR=/usr/src/app/
- ---&gt; Running in e06b150515b9
-Removing intermediate container e06b150515b9
- ---&gt; a11487391e3c
-Step 3/15 : RUN mkdir $BUILD_DIR
- ---&gt; Running in 93e2bddea054
-Removing intermediate container 93e2bddea054
- ---&gt; 0af9806d421c
-Step 4/15 : WORKDIR $BUILD_DIR
- ---&gt; Running in c0df968ecb22
-Removing intermediate container c0df968ecb22
- ---&gt; f0a3bef870fb
-Step 5/15 : VOLUME ${HOME}/.m2:/root/.m2
- ---&gt; Running in 38fca9b0e2de
-Removing intermediate container 38fca9b0e2de
- ---&gt; 628afb08802a
-Step 6/15 : ADD . /usr/src/app
- ---&gt; 824dacff4b1c
-Step 7/15 : RUN bash -c " mvn clean install"
- ---&gt; Running in 018fc5b02052
+Step 2/21 : ENV BUILD_DIR=/usr/src/app/
+ ---&gt; Running in 02c2c0bdb8bf
+Removing intermediate container 02c2c0bdb8bf
+ ---&gt; f09a7e2e03e7
+Step 3/21 : RUN mkdir $BUILD_DIR
+ ---&gt; Running in af3141c3e1fc
+Removing intermediate container af3141c3e1fc
+ ---&gt; 98aee6a73219
+Step 4/21 : WORKDIR $BUILD_DIR
+ ---&gt; Running in e85580f76678
+Removing intermediate container e85580f76678
+ ---&gt; e4bb0b1b310d
+Step 5/21 : VOLUME ${HOME}/.m2:/root/.m2
+ ---&gt; Running in bec55df2bd55
+Removing intermediate container bec55df2bd55
+ ---&gt; 71d3ddd3775b
+Step 6/21 : ADD . /usr/src/app
+ ---&gt; 3a7a1f086e77
+Step 7/21 : RUN bash -c " mvn clean install"
+ ---&gt; Running in 8c726a5c1380
 [INFO] Scanning for projects...
-Downloading: https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-starter-parent/1.5.15.RELEASE/spring-boot-starter-parent-1.5.15.RELEASE.pom
-Downloaded: https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-starter-parent/1.5.15.RELEASE/spring-boot-starter-parent-1.5.15.RELEASE.pom (8 KB at 9.1 KB/sec)
-Downloading: https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-dependencies/1.5.15.RELEASE/spring-boot-dependencies-1.5.15.RELEASE.pom
+Downloading: https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-starter-parent/2.1.7.RELEASE/spring-boot-starter-parent-2.1.7.RELEASE.pom
+Downloaded: https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot-starter-parent/2.1.7.RELEASE/spring-boot-starter-parent-2.1.7.RELEASE.pom (10 KB at 10.4 KB/sec)
 .................
 .................
 .................
-.................
-Step 15/15 : ENTRYPOINT [ "sh", "-c", "java $JAVA_OPTS -Djava.security.egd=file:/dev/./urandom -jar ./app.jar" ]
- ---&gt; Running in 743a0dfaace5
-Removing intermediate container 743a0dfaace5
- ---&gt; f79f112b85de
-Successfully built f79f112b85de
+Step 20/21 : RUN chown -R 1001.0 /opt/ol/wlp/usr/shared/resources/lib.index.cache &amp;&amp; chmod -R g+rw /opt/ol/wlp/usr/shared/resources/lib.index.cache
+ ---&gt; Running in ae77279b238c
+Removing intermediate container ae77279b238c
+ ---&gt; 74640a653475
+Step 21/21 : USER 1001
+ ---&gt; Running in 01c24024899a
+Removing intermediate container 01c24024899a
+ ---&gt; 55240d6d8edc
+Successfully built 55240d6d8edc
 Successfully tagged greeting:v2.0.0</code></pre>
 </div>
 </div>
@@ -1049,10 +1102,10 @@ Successfully tagged greeting:v2.0.0</code></pre>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ docker images
-REPOSITORY          TAG                 IMAGE ID            CREATED              SIZE
-greeting            v2.0.0              f79f112b85de        43 seconds ago       317MB
-ibmjava             8-sfj               ab418b419902        9 days ago           222MB
-maven               3.3-jdk-8           9997d8483b2f        2 years ago          653MB</code></pre>
+REPOSITORY                           TAG                   IMAGE ID            CREATED              SIZE
+greeting                             v2.0.0                55240d6d8edc        45 seconds ago       402MB
+openliberty/open-liberty             springBoot2-ubi-min   bcfcb2c5ce16        6 days ago           366MB
+maven                                3.3-jdk-8             9997d8483b2f        2 years ago          653MB</code></pre>
 </div>
 </div>
 </div>
@@ -1067,7 +1120,7 @@ maven               3.3-jdk-8           9997d8483b2f        2 years ago         
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ docker run -p 8080:8080 -d --name greeting_multistage greeting:v2.0.0</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ docker run -p 9080:9080 -d --name greeting_multistage greeting:v2.0.0</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -1075,8 +1128,8 @@ maven               3.3-jdk-8           9997d8483b2f        2 years ago         
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ docker run -p 8080:8080 -d --name greeting_multistage greeting:v2.0.0
-fe8dc2ebfc7db2173806dc736ce47c80c2ebad4f5b70a236dcb17bd8c6d09aba</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ docker run -p 9080:9080 -d --name greeting_multistage greeting:v2.0.0
+baf6f41b3ab785dfdccd9d83486b351a9d9718fcc3690f68e9f574e36c914844</code></pre>
 </div>
 </div>
 <div class="ulist">
@@ -1097,8 +1150,8 @@ fe8dc2ebfc7db2173806dc736ce47c80c2ebad4f5b70a236dcb17bd8c6d09aba</code></pre>
 <div class="listingblock">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">$ docker ps
-CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                    NAMES
-fe8dc2ebfc7d        greeting:v2.0.0     "sh -c 'java $JAVA_O…"   17 seconds ago      Up 16 seconds       0.0.0.0:8080-&gt;8080/tcp   greeting_multistage</code></pre>
+CONTAINER ID        IMAGE               COMMAND                  CREATED             STATUS              PORTS                              NAMES
+baf6f41b3ab7        greeting:v2.0.0     "/opt/ol/helpers/run…"   26 seconds ago      Up 25 seconds       0.0.0.0:9080-&gt;9080/tcp, 9443/tcp   greeting_multistage</code></pre>
 </div>
 </div>
 <div class="ulist">
@@ -1150,7 +1203,7 @@ fe8dc2ebfc7d        greeting:v2.0.0     "sh -c 'java $JAVA_O…"   17 seconds ag
 <div class="ulist">
 <ul>
 <li>
-<p>To access the application, open the browser and access <a href="http://localhost:8080/greeting?name=John" class="bare">http://localhost:8080/greeting?name=John</a>.</p>
+<p>To access the application, open the browser and access <a href="http://localhost:9080/greeting?name=John" class="bare">http://localhost:9080/greeting?name=John</a>.</p>
 </li>
 </ul>
 </div>
